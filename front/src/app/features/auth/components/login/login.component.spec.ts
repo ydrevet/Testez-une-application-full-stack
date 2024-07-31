@@ -52,7 +52,7 @@ describe('LoginComponent', () => {
     expect(errorElement.nativeElement.innerHTML).toEqual('An error occurred');
   });
 
-  it('shold not be valid if missing email', () => {
+  it('should not be valid if missing email', () => {
     component.form.setValue({
       email: '',
       password: 'password',

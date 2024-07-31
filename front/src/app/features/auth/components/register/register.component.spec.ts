@@ -9,6 +9,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { expect } from '@jest/globals';
 
 import { RegisterComponent } from './register.component';
+import {By} from "@angular/platform-browser";
 
 describe('RegisterComponent', () => {
   let component: RegisterComponent;
@@ -20,7 +21,7 @@ describe('RegisterComponent', () => {
       imports: [
         BrowserAnimationsModule,
         HttpClientModule,
-        ReactiveFormsModule,  
+        ReactiveFormsModule,
         MatCardModule,
         MatFormFieldModule,
         MatIconModule,
@@ -37,4 +38,136 @@ describe('RegisterComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should display an error message on error condition', () => {
+    component.onError = true;
+    fixture.detectChanges();
+    const errorElement = fixture.debugElement.query(By.css('.error'));
+
+    // Expect element to exist
+    expect(errorElement).toBeTruthy();
+    // ...and to display the proper error message
+    expect(errorElement.nativeElement.innerHTML).toEqual('An error occurred');
+  });
+
+  it('should be valid when every field is valid', () => {
+    component.form.setValue({
+      email: 'john@doe.com',
+      password: 'goodP@ssw0rd',
+      firstName: 'John',
+      lastName: 'Doe'
+    });
+    expect(component.form.valid).toBe(true);
+  });
+
+  it('should not be valid when missing email', () => {
+    component.form.setValue({
+      email: '',
+      password: 'goodP@ssw0rd',
+      firstName: 'John',
+      lastName: 'Doe'
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
+  it('should not be valid when missing password', () => {
+    component.form.setValue({
+      email: 'john@doe.com',
+      password: '',
+      firstName: 'John',
+      lastName: 'Doe'
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
+  it('should not be valid when missing first name', () => {
+    component.form.setValue({
+      email: 'john@doe.com',
+      password: 'goodP@ssw0rd',
+      firstName: '',
+      lastName: 'Doe'
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
+  it('should not be valid when missing last name', () => {
+    component.form.setValue({
+      email: 'john@doe.com',
+      password: 'goodP@ssw0rd',
+      firstName: 'John',
+      lastName: ''
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
+  it('should not be valid if email is malformed', () => {
+    component.form.setValue({
+      email: 'notavalidemailaddress',
+      password: 'goodP@ssw0rd',
+      firstName: 'John',
+      lastName: 'Doe'
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
+  it('should not be valid if firstName under 3 characters', () => {
+    component.form.setValue({
+      email: 'john@doe.com',
+      password: 'goodP@ssw0rd',
+      firstName: 'Jo',
+      lastName: 'Doe'
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
+  it('should not be valid if firstName over 20 characters', () => {
+    component.form.setValue({
+      email: 'john@doe.com',
+      password: 'goodP@ssw0rd',
+      firstName: 'J'.repeat(21),
+      lastName: 'Doe'
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
+  it('should not be valid if lastName under 3 characters', () => {
+    component.form.setValue({
+      email: 'john@doe.com',
+      password: 'goodP@ssw0rd',
+      firstName: 'John',
+      lastName: 'Do'
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
+  it('should not be valid if lastName over 20 characters', () => {
+    component.form.setValue({
+      email: 'john@doe.com',
+      password: 'goodP@ssw0rd',
+      firstName: 'John',
+      lastName: 'D'.repeat(21)
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
+  it('should not be valid if password under 3 characters', () => {
+    component.form.setValue({
+      email: 'john@doe.com',
+      password: 'aa',
+      firstName: 'John',
+      lastName: 'Doe'
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
+  it('should not be valid if password over 40 characters', () => {
+    component.form.setValue({
+      email: 'john@doe.com',
+      password: 'a'.repeat(41),
+      firstName: 'John',
+      lastName: 'Doe'
+    });
+    expect(component.form.valid).toBe(false);
+  });
+
 });
