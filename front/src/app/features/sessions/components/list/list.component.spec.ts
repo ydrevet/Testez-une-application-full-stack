@@ -9,6 +9,7 @@ import {ListComponent} from './list.component';
 import {By} from "@angular/platform-browser";
 import {SessionApiService} from "../../services/session-api.service";
 import {MockSessionApiService} from "../../services/session-api.service.mock";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 
 describe('ListComponent', () => {
@@ -28,7 +29,8 @@ describe('ListComponent', () => {
       providers: [
         {provide: SessionService, useValue: mockSessionService},
         {provide: SessionApiService, useClass: MockSessionApiService}
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
       .compileComponents();
 
