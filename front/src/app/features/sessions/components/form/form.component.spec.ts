@@ -14,46 +14,97 @@ import { SessionService } from 'src/app/services/session.service';
 import { SessionApiService } from '../../services/session-api.service';
 
 import { FormComponent } from './form.component';
+import {NavigationExtras, Router} from "@angular/router";
 
 describe('FormComponent', () => {
   let component: FormComponent;
   let fixture: ComponentFixture<FormComponent>;
 
-  const mockSessionService = {
-    sessionInformation: {
-      admin: true
+  describe('as an administrator', () => {
+    const mockSessionService = {
+      sessionInformation: {
+        admin: true
+      }
     }
-  } 
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
 
-      imports: [
-        RouterTestingModule,
-        HttpClientModule,
-        MatCardModule,
-        MatIconModule,
-        MatFormFieldModule,
-        MatInputModule,
-        ReactiveFormsModule, 
-        MatSnackBarModule,
-        MatSelectModule,
-        BrowserAnimationsModule
-      ],
-      providers: [
-        { provide: SessionService, useValue: mockSessionService },
-        SessionApiService
-      ],
-      declarations: [FormComponent]
-    })
-      .compileComponents();
+        imports: [
+          RouterTestingModule,
+          HttpClientModule,
+          MatCardModule,
+          MatIconModule,
+          MatFormFieldModule,
+          MatInputModule,
+          ReactiveFormsModule,
+          MatSnackBarModule,
+          MatSelectModule,
+          BrowserAnimationsModule
+        ],
+        providers: [
+          {provide: SessionService, useValue: mockSessionService},
+          SessionApiService
+        ],
+        declarations: [FormComponent]
+      })
+        .compileComponents();
 
-    fixture = TestBed.createComponent(FormComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+      fixture = TestBed.createComponent(FormComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+      expect(component).toBeTruthy();
+    });
+  })
+
+  describe('as a regular user', () => {
+    const mockSessionService = {
+      sessionInformation: {
+        admin: false
+      }
+    }
+    let routerSpy: jest.SpyInstance<Promise<boolean>, [commands: any[], extras?: NavigationExtras | undefined]>;
+
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+
+        imports: [
+          RouterTestingModule,
+          HttpClientModule,
+          MatCardModule,
+          MatIconModule,
+          MatFormFieldModule,
+          MatInputModule,
+          ReactiveFormsModule,
+          MatSnackBarModule,
+          MatSelectModule,
+          BrowserAnimationsModule
+        ],
+        providers: [
+          { provide: SessionService, useValue: mockSessionService },
+          SessionApiService,
+        ],
+        declarations: [FormComponent]
+      })
+        .compileComponents();
+
+      fixture = TestBed.createComponent(FormComponent);
+      component = fixture.componentInstance;
+      const router = TestBed.inject(Router);
+      routerSpy = jest.spyOn(router, 'navigate');
+      fixture.detectChanges();
+    });
+
+    it('should create', () => {
+      expect(component).toBeTruthy();
+    });
+
+    it('should redirect to session page', () => {
+      expect(routerSpy).toHaveBeenCalledWith(['/sessions']);
+    });
+  })
+
 });
