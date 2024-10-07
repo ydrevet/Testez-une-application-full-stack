@@ -124,7 +124,7 @@ describe('LoginComponent', () => {
 
   it('should raise an error when login attempt failed', () => {
     component.form.setValue(goodRequest);
-    mockAuthService.login.mockReturnValue(throwError(() => new Error()));
+    mockAuthService.login.mockReturnValueOnce(throwError(() => new Error()));
 
     component.submit();
 
