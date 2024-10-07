@@ -12,15 +12,36 @@ import { SessionService } from 'src/app/services/session.service';
 
 import { LoginComponent } from './login.component';
 import { By } from "@angular/platform-browser";
+import {AuthService} from "../../services/auth.service";
+import {LoginRequest} from "../../interfaces/loginRequest.interface";
+import {SessionInformation} from "../../../../interfaces/sessionInformation.interface";
+import {of, throwError} from "rxjs";
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
 
+  const goodRequest = {
+    email: 'test@test.com',
+    password: 'goodP@ssw0rd',
+  };
+
+  const mockSessionInformation: SessionInformation = {
+    admin: false,
+    firstName: "",
+    id: 0,
+    lastName: "",
+    token: "",
+    type: "",
+    username: ""
+  }
+  const mockAuthService = {
+    login: jest.fn(() => of(mockSessionInformation))
+  }
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [LoginComponent],
-      providers: [SessionService],
       imports: [
         RouterTestingModule,
         BrowserAnimationsModule,
@@ -29,7 +50,12 @@ describe('LoginComponent', () => {
         MatIconModule,
         MatFormFieldModule,
         MatInputModule,
-        ReactiveFormsModule]
+        ReactiveFormsModule],
+      providers: [
+        SessionService,
+        {provide: AuthService, useValue: mockAuthService},
+      ],
+
     })
       .compileComponents();
     fixture = TestBed.createComponent(LoginComponent);
@@ -84,11 +110,24 @@ describe('LoginComponent', () => {
     expect(component.form.valid).toBe(false);
   });
 
-  it('should be valid if both fields provided and valid', () => {
-    component.form.setValue({
-      email: 'test@test.com',
-      password: 'goodP@ssw0rd',
-    });
+  it('should be valid if both fields provided are valid', () => {
+    component.form.setValue(goodRequest);
     expect(component.form.valid).toBe(true);
+  });
+
+  it('should login the user on submission', () => {
+    component.form.setValue(goodRequest);
+    component.submit();
+    expect(mockAuthService.login).toHaveBeenCalledTimes(1);
+    expect(mockAuthService.login).toHaveBeenCalledWith(goodRequest as LoginRequest);
+  });
+
+  it('should raise an error when login attempt failed', () => {
+    component.form.setValue(goodRequest);
+    mockAuthService.login.mockReturnValue(throwError(() => new Error()));
+
+    component.submit();
+
+    expect(component.onError).toEqual(true);
   });
 });
