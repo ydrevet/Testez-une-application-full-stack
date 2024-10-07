@@ -10,10 +10,25 @@ import { expect } from '@jest/globals';
 
 import { RegisterComponent } from './register.component';
 import {By} from "@angular/platform-browser";
+import {AuthService} from "../../services/auth.service";
+import {of, throwError} from "rxjs";
+import {Router} from "@angular/router";
 
 describe('RegisterComponent', () => {
   let component: RegisterComponent;
   let fixture: ComponentFixture<RegisterComponent>;
+  let router: Router;
+
+  const validRegistrationRequest = {
+    email: 'john@doe.com',
+    password: 'goodP@ssw0rd',
+    firstName: 'John',
+    lastName: 'Doe'
+  }
+
+  const mockAuthService = {
+    register: jest.fn((x) => of(null)),
+  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -26,13 +41,21 @@ describe('RegisterComponent', () => {
         MatFormFieldModule,
         MatIconModule,
         MatInputModule
+      ],
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
       ]
     })
       .compileComponents();
 
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
+    router = TestBed.inject(Router);
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should create', () => {
@@ -51,12 +74,7 @@ describe('RegisterComponent', () => {
   });
 
   it('should be valid when every field is valid', () => {
-    component.form.setValue({
-      email: 'john@doe.com',
-      password: 'goodP@ssw0rd',
-      firstName: 'John',
-      lastName: 'Doe'
-    });
+    component.form.setValue(validRegistrationRequest);
     expect(component.form.valid).toBe(true);
   });
 
@@ -168,6 +186,27 @@ describe('RegisterComponent', () => {
       lastName: 'Doe'
     });
     expect(component.form.valid).toBe(false);
+  });
+
+  it('should register the user on submission', () => {
+    component.form.setValue(validRegistrationRequest);
+    component.submit();
+    expect(mockAuthService.register).toHaveBeenCalledTimes(1);
+  });
+
+  it('should throw an error on registration failure', () => {
+    component.form.setValue(validRegistrationRequest);
+    mockAuthService.register.mockReturnValueOnce(throwError(() => new Error()));
+    component.submit();
+    expect(component.onError).toEqual(true);
+  });
+
+  it('should redirect to login page after successful registration', () => {
+    component.form.setValue(validRegistrationRequest);
+    jest.spyOn(router, 'navigate');
+    component.submit();
+    expect(router.navigate).toHaveBeenCalledTimes(1);
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
 });
