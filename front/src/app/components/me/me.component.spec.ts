@@ -40,6 +40,17 @@ describe('MeComponent', () => {
     updatedAt: new Date(),
   }
 
+  const mockRegularUser: User = {
+    admin: false,
+    createdAt: new Date(),
+    email: "jane.doe@example.com",
+    firstName: "Jane",
+    id: 1,
+    lastName: "Doe",
+    password: "password",
+    updatedAt: new Date(),
+  }
+
   const mockUserService = {
     getById: (id: String): Observable<User> => {
       if (id === "1") {
@@ -128,5 +139,17 @@ describe('MeComponent', () => {
 
     expect(routerNavigateSpy).toHaveBeenCalledTimes(1);
     expect(routerNavigateSpy).toHaveBeenCalledWith(['/']);
-  })
+  });
+
+  it('should not display a delete button to administrators', () => {
+    const deleteButton = fixture.nativeElement.querySelector('button[data-test=delete-button]');
+    expect(deleteButton).toBeFalsy();
+  });
+
+  it('should display a delete button to regular users', () => {
+    component.user = mockRegularUser;
+    fixture.detectChanges();
+    const deleteButton = fixture.debugElement.query(By.css('button[data-test=delete-button]')).nativeElement;
+    expect(deleteButton).toBeTruthy();
+  });
 });
